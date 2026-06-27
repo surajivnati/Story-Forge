@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Story Forge — AI Storytelling</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: system-ui, sans-serif;
+            background: #f5f5f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        
+        .app {
+            width: 100%;
+            max-width: 680px;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 2rem;
+        }
+        
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .genre-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            text-align: center;
+            background: white;
+            transition: all 0.15s;
+        }
+        
+        .genre-card:hover {
+            border-color: #534AB7;
+            background: #f8f7ff;
+        }
+        
+        .genre-card.selected {
+            border: 2px solid #534AB7;
+            background: #EEEDFE;
+        }
+        
+        .genre-card i {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 6px;
+            color: #888;
+        }
+        
+        .genre-card.selected i {
+            color: #534AB7;
+        }
+        
+        .genre-card span {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .card {
+            background: #fafafa;
+            border: 1px solid #ebebeb;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .row2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        input,
+        textarea {
+            width: 100%;
+            font-family: inherit;
+            font-size: 14px;
+            padding: 9px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            outline: none;
+        }
+        
+        input:focus,
+        textarea:focus {
+            border-color: #534AB7;
+        }
+        
+        .start-btn {
+            width: 100%;
+            background: #534AB7;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        
+        .start-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .phase {
+            display: none;
+        }
+        
+        .phase.active {
+            display: block;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .stat {
+            background: #f5f5f0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            text-align: center;
+        }
+        
+        .stat .val {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        
+        .stat .lbl {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .story-panel {
+            background: white;
+            border: 1px solid #ebebeb;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            min-height: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .msg-narrator {
+            font-size: 15px;
+            line-height: 1.75;
+            color: #1a1a2e;
+            font-style: italic;
+            padding: 12px 14px;
+            background: #f8f7ff;
+            border-radius: 8px;
+            border-left: 3px solid #534AB7;
+            margin-bottom: 10px;
+        }
+        
+        .msg-player {
+            font-size: 14px;
+            color: #3C3489;
+            padding: 8px 12px;
+            background: #EEEDFE;
+            border-radius: 8px;
+            margin-left: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .msg-system {
+            font-size: 13px;
+            color: #999;
+            text-align: center;
+            padding: 6px 0;
+            margin-bottom: 6px;
+        }
+        
+        .choices-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .choice-btn {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #333;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        
+        .choice-btn:hover {
+            background: #EEEDFE;
+            border-color: #534AB7;
+            color: #3C3489;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .input-row textarea {
+            resize: none;
+            height: 52px;
+            flex: 1;
+        }
+        
+        .send-btn {
+            background: #534AB7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 18px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.4;
+        }
+        
+        .loading-dot {
+            animation: blink 1s infinite;
+        }
+        
+        .dot2 {
+            animation-delay: 0.3s;
+        }
+        
+        .dot3 {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 0.2
+            }
+            50% {
+                opacity: 1
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" style="background-color: burlywood;">
+        <div class="phase active" id="phase-setup">
+            <h1>🪄 Story Forge</h1>
+            <p class="subtitle">AI-powered interactive storytelling adventure</p>
+
+            <div class="section-label">Choose your genre</div>
+            <div class="genre-grid">
+                <div class="genre-card" data-genre="Fantasy" onclick="selectGenre(this)"><i class="ti ti-wand"></i><span>Fantasy</span></div>
+                <div class="genre-card" data-genre="Science Fiction" onclick="selectGenre(this)"><i class="ti ti-rocket"></i><span>Sci-Fi</span></div>
+                <div class="genre-card" data-genre="Mystery" onclick="selectGenre(this)"><i class="ti ti-eye"></i><span>Mystery</span></div>
+                <div class="genre-card" data-genre="Adventure" onclick="selectGenre(this)"><i class="ti ti-mountain"></i><span>Adventure</span></div>
+                <div class="genre-card" data-genre="Horror" onclick="selectGenre(this)"><i class="ti ti-skull"></i><span>Horror</span></div>
+                <div class="genre-card" data-genre="Romance" onclick="selectGenre(this)"><i class="ti ti-heart"></i><span>Romance</span></div>
+            </div>
+
+            <div class="card">
+                <div class="section-label">👤 Your Character</div>
+                <div class="row2">
+                    <div>
+                        <div class="section-label">Name</div><input type="text" id="charName" placeholder="e.g. Aryan, Priya..." oninput="checkReady()" /></div>
+                    <div>
+                        <div class="section-label">Role / Class</div><input type="text" id="charRole" placeholder="e.g. Mage, Detective..." oninput="checkReady()" /></div>
+                </div>
+                <div class="section-label">Personality & Background (optional)</div>
+                <input type="text" id="charBg" placeholder="e.g. Brave but reckless, grew up in mountains..." />
+            </div>
+
+            <div class="card">
+                <div class="section-label">👥 Companion (optional)</div>
+                <div class="row2">
+                    <div>
+                        <div class="section-label">Name</div><input type="text" id="compName" placeholder="e.g. Rohan, Zara..." /></div>
+                    <div>
+                        <div class="section-label">Type</div><input type="text" id="compType" placeholder="e.g. Loyal knight..." /></div>
+                </div>
+            </div>
+
+            <button class="start-btn" id="startBtn" onclick="startStory()" disabled>▶ Begin the Adventure</button>
+        </div>
+
+        <div class="phase" id="phase-story">
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="val" id="statChapter">1</div>
+                    <div class="lbl">Chapter</div>
+                </div>
+                <div class="stat">
+                    <div class="val" id="statChoices">0</div>
+                    <div class="lbl">Choices Made</div>
+                </div>
+                <div class="stat">
+                    <div class="val" id="statGenre">—</div>
+                    <div class="lbl">Genre</div>
+                </div>
+            </div>
+
+            <div class="story-panel" id="storyPanel"></div>
+            <div class="choices-bar" id="choicesBar"></div>
+
+            <div class="input-row">
+                <textarea id="playerInput" placeholder="Type your action or decision... (Enter to send)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAction()}"></textarea>
+                <button class="send-btn" id="sendBtn" onclick="sendAction()">➤</button>
+            </div>
+            <div style="margin-top:8px; display:flex; justify-content:space-between;">
+                <span style="font-size:12px; color:#999">Enter = Send · Shift+Enter = New line</span>
+                <button onclick="resetStory()" style="background:none; border:none; font-size:12px; color:#999; cursor:pointer">↺ New Story</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "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";
+
+        let selectedGenre = '',
+            history = [],
+            choicesMade = 0,
+            chapter = 1,
+            isLoading = false;
+
+        function selectGenre(el) {
+            document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedGenre = el.dataset.genre;
+            checkReady();
+        }
+
+        function checkReady() {
+            const n = document.getElementById('charName').value.trim();
+            const r = document.getElementById('charRole').value.trim();
+            document.getElementById('startBtn').disabled = !(selectedGenre && n && r);
+        }
+
+        function addMsg(type, text) {
+            const p = document.getElementById('storyPanel');
+            const d = document.createElement('div');
+            d.className = 'msg-' + type;
+            d.textContent = text;
+            p.appendChild(d);
+            p.scrollTop = p.scrollHeight;
+            return d;
+        }
+
+        function showLoading() {
+            const p = document.getElementById('storyPanel');
+            const d = document.createElement('div');
+            d.id = 'loadingMsg';
+            d.className = 'msg-narrator';
+            d.innerHTML = '<span class="loading-dot">▪</span><span class="loading-dot dot2">▪</span><span class="loading-dot dot3">▪</span>';
+            p.appendChild(d);
+            p.scrollTop = p.scrollHeight;
+        }
+
+        function removeLoading() {
+            const e = document.getElementById('loadingMsg');
+            if (e) e.remove();
+        }
+
+        function setChoices(choices) {
+            const bar = document.getElementById('choicesBar');
+            bar.innerHTML = '';
+            choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = c;
+                btn.onclick = () => {
+                    document.getElementById('playerInput').value = c;
+                    sendAction();
+                };
+                bar.appendChild(btn);
+            });
+        }
+
+        function buildSystem() {
+            const n = document.getElementById('charName').value.trim();
+            const r = document.getElementById('charRole').value.trim();
+            const bg = document.getElementById('charBg').value.trim();
+            const cn = document.getElementById('compName').value.trim();
+            const ct = document.getElementById('compType').value.trim();
+            return `You are a master storyteller for an interactive ${selectedGenre} adventure.
+Player character: ${n}, a ${r}${bg?` (${bg})`:''}. ${cn?`Companion: ${cn}, a ${ct}.`:''}
+Rules:
+1. Write vivid, immersive narrative (3-5 sentences).
+2. After narrative, write: CHOICES: option1|option2|option3
+3. Occasionally write CHAPTER_UP on a new line to advance the chapter.
+4. Reference character name (${n}) naturally.`;
+  }
+  async function callClaude(sys, userMsg) {
+    const msgs=[...history,{role:'user',content:userMsg}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:msgs})
+    });
+    const data=await res.json();
+    const text=data.content.map(b=>b.text||'').join('');
+    history.push({role:'user',content:userMsg});
+    history.push({role:'assistant',content:text});
+    return text;
+  }
+  function parseResponse(text) {
+    const cm=text.match(/CHOICES:\s*(.+)/i);
+    const cu=/CHAPTER_UP/i.test(text);
+    let narrative=text.replace(/CHOICES:.+/gi,'').replace(/CHAPTER_UP/gi,'').trim();
+    const choices=cm?cm[1].split('|').map(c=>c.trim()).filter(Boolean):[];
+    return {narrative,choices,cu};
+  }
+  async function startStory() {
+    history=[]; choicesMade=0; chapter=1;
+    document.getElementById('statGenre').textContent=selectedGenre;
+    document.getElementById('statChapter').textContent='1';
+    document.getElementById('statChoices').textContent='0';
+    document.getElementById('phase-setup').classList.remove('active');
+    document.getElementById('phase-story').classList.add('active');
+    document.getElementById('storyPanel').innerHTML='';
+    document.getElementById('choicesBar').innerHTML='';
+    const n=document.getElementById('charName').value.trim();
+    const r=document.getElementById('charRole').value.trim();
+    addMsg('system','Your adventure begins...');
+    showLoading();
+    document.getElementById('sendBtn').disabled=true;
+    const sys=buildSystem();
+    try {
+      const resp=await callClaude(sys,`Begin the ${selectedGenre} story. Introduce ${n} the ${r} dramatically.`);
+      removeLoading();
+      const {narrative,choices,cu}=parseResponse(resp);
+      addMsg('narrator',narrative);
+      if(choices.length) setChoices(choices);
+    } catch(e) { removeLoading(); addMsg('system','Error: '+e.message); }
+    document.getElementById('sendBtn').disabled=false;
+  }
+  async function sendAction() {
+    if(isLoading) return;
+    const input=document.getElementById('playerInput');
+    const action=input.value.trim();
+    if(!action) return;
+    isLoading=true;
+    document.getElementById('sendBtn').disabled=true;
+    document.getElementById('choicesBar').innerHTML='';
+    input.value='';
+    addMsg('player','> '+action);
+    showLoading();
+    choicesMade++;
+    document.getElementById('statChoices').textContent=choicesMade;
+    try {
+      const resp=await callClaude(buildSystem(),action);
+      removeLoading();
+      const {narrative,choices,cu}=parseResponse(resp);
+      addMsg('narrator',narrative);
+      if(cu){ chapter++; document.getElementById('statChapter').textContent=chapter; addMsg('system','— Chapter '+chapter+' —'); }
+      if(choices.length) setChoices(choices);
+    } catch(e) { removeLoading(); addMsg('system','Error: '+e.message); }
+    isLoading=false;
+    document.getElementById('sendBtn').disabled=false;
+  }
+  function resetStory() {
+    history=[]; document.getElementById('phase-story').classList.remove('active');
+    document.getElementById('phase-setup').classList.add('active');
+    document.querySelectorAll('.genre-card').forEach(c=>c.classList.remove('selected'));
+    selectedGenre=''; document.getElementById('startBtn').disabled=true;
+    ['charName','charRole','charBg','compName','compType'].forEach(id=>document.getElementById(id).value='');
+  }
+    </script>
+</body>
+
+</html>
